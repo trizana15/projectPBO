@@ -7,27 +7,27 @@ import java.awt.event.FocusListener;
 
 public class TaskComponent extends JPanel implements ActionListener {
     private JCheckBox checkBox;
-
     private JTextPane taskField;
     private JButton deleteButton;
+
+    private JPanel parentPanel;
 
     public JTextPane getTaskField(){
         return taskField;
     }
 
-    //this panel is used so that we can make updates to the task component panel when deleting tasks
-    private JPanel parentPanel;
-
     public TaskComponent(JPanel parentPanel){
         this.parentPanel = parentPanel;
 
-        //task field
+        // Set layout to BoxLayout to allow the components to align vertically and horizontally.
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS)); // Horizontal alignment
+
+        // task field
         taskField = new JTextPane();
         taskField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        taskField.setPreferredSize(CommonConstants.TASKFIELD_SIZE);
+        taskField.setPreferredSize(CommontConstant.TASKFIELD_SIZE);
         taskField.setContentType("text/html");
         taskField.addFocusListener(new FocusListener() {
-            //indicate which task field is currently being edited
             @Override
             public void focusGained(FocusEvent e) {
                 taskField.setBackground(Color.WHITE);
@@ -39,44 +39,52 @@ public class TaskComponent extends JPanel implements ActionListener {
             }
         });
 
-        //check box
+        // check box
         checkBox = new JCheckBox();
-        checkBox.setPreferredSize(CommonConstants.CHECKBOX_SIZE);
+        checkBox.setPreferredSize(CommontConstant.CHECKBOX_SIZE);
         checkBox.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         checkBox.addActionListener(this);
 
-        //delete button
+        // delete button
         deleteButton = new JButton("X");
-        deleteButton.setPreferredSize(CommonConstants.DELETE_BUTTON_SIZE);
+        deleteButton.setPreferredSize(CommontConstant.DELETE_BUTTON_SIZE);
         deleteButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         deleteButton.addActionListener(this);
 
-        //add to this taskcomponent
-        add(checkBox);
-        add(taskField);
-        add(deleteButton);
+        // Add components to this task component with BoxLayout (Horizontal layout)
+        JPanel checkBoxAndFieldPanel = new JPanel();
+        checkBoxAndFieldPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Ensures checkbox and task field are on the left side
+        checkBoxAndFieldPanel.add(checkBox);
+        checkBoxAndFieldPanel.add(taskField);
+
+        // Add components to the main panel
+        add(checkBoxAndFieldPanel); // Add checkbox and task field
+        add(deleteButton); // Add the delete button on the right side
+
+        // Ensure the task component is visible
+        setPreferredSize(new Dimension(
+                CommontConstant.TASKFIELD_SIZE.width + CommontConstant.CHECKBOX_SIZE.width + CommontConstant.DELETE_BUTTON_SIZE.width,
+                Math.max(CommontConstant.TASKFIELD_SIZE.height, CommontConstant.CHECKBOX_SIZE.height)
+        ));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Handle checkbox behavior
         if(checkBox.isSelected()){
-            //replaces all html tags to empty string to grab the main text
-            String taskText = taskField.getText().replaceAll("<[^>]*>", "");
-
-            //add strikethrough text
-            taskField.setText("<html><s>"+ taskText + "</s></html>");
-        }else if(!checkBox.isSelected()){
-            String taskText = taskField.getText().replaceAll("<[^>]*>", "");
-
-            taskField.setText(taskText);
-
+            String taskText = taskField.getText().replaceAll("<[^>]*>", ""); // Remove HTML tags
+            taskField.setText("<html><s>" + taskText + "</s></html>"); // Add strikethrough to the text
+        } else {
+            String taskText = taskField.getText().replaceAll("<[^>]*>", ""); // Remove HTML tags
+            taskField.setText(taskText); // Remove strikethrough
         }
-        if(e.getActionCommand(). equalsIgnoreCase("X")){
-            //delete this componant from the parent panel
-            parentPanel.remove(this);
-            parentPanel.repaint();
-            parentPanel.revalidate();
 
+        // Handle delete button behavior
+        if(e.getSource() == deleteButton){
+            // Remove the task component from the parent panel
+            parentPanel.remove(this);
+            parentPanel.revalidate();
+            parentPanel.repaint();
         }
     }
 }
